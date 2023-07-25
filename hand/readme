@@ -1,1 +1,4 @@
 this is hand
+pip3 install mediapipe 管理员身份运行
+pip install cv2
+pip install numpy
