@@ -12,6 +12,7 @@ class handdetector():
         self.mpHands=mp.solutions.hands
         self.hands=self.mpHands.Hands(self.mode,self.maxHands,self.modelC,self.detectionCon,self.trackCon)
         self.mpDraw = mp.solutions.drawing_utils
+        self.tipIds=[4,8,12,16,20]
     
     def findHands(self,img,draw=True): 
         imgRGB=cv2.cvtColor(img,cv2.COLOR_BGR2RGB)
@@ -24,7 +25,7 @@ class handdetector():
                     self.mpDraw.draw_landmarks(img,handLms,self.mpHands.HAND_CONNECTIONS)
         return img
     def findposition(self,img,handNo=0,draw=True):
-        lmList= []
+        self.lmList= []
         if self.results.multi_hand_landmarks:
             myhand=self.results.multi_hand_landmarks[handNo]
             for id,lm in enumerate(myhand.landmark):
@@ -32,10 +33,24 @@ class handdetector():
                 h,w,c=img.shape
                 cx,cy=int(lm.x*w),int(lm.y*h)
                 # print(id,cx,cy)
-                lmList.append([id,cx,cy])
+                self.lmList.append([id,cx,cy])
                 if draw:
                     cv2.circle(img,(cx,cy),15,(255,0,255),cv2.FILLED)
-        return lmList
+        return self.lmList
+    def fingersUp(self):
+        fingers=[]
+        if((self.lmList[4][1]>self.lmList[3][1])^(self.lmList[12][1]>self.lmList[8][1])):
+            fingers.append(1)
+        else:
+            fingers.append(0)
+        for id in range(1,5):
+            if(self.lmList[self.tipIds[id]][2]<self.lmList[self.tipIds[id]-2][2]):
+                fingers.append(1)
+            else:
+                fingers.append(0)
+        # print(fingers)
+        return fingers
+        
 def main():
     
     cap=cv2.VideoCapture(0)
